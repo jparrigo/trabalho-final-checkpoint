@@ -10,23 +10,22 @@ PATH_TO_SAVE_VAL = "distorcoes/val/n01440764/"
 PATH_TO_DIR_TRAIN = "imagenette2/train/n01440764/"
 PATH_TO_SAVE_TRAIN = "distorcoes/train/n01440764/"
 
-
+# Ajustando o cabeçalho para refletir as distorções aplicadas
 HEADERS = [
     "FILE_PATH",
     "ORIG_CLASSES",
-    "GAUSS_SSIM",
-    "GAUSS_CLASSES",
+    "CANNY_SSIM",
+    "CANNY_CLASSES",
+    "ROTATION_SSIM",
+    "ROTATION_CLASSES",
+    "BRIGHTNESS_SSIM",
+    "BRIGHTNESS_CLASSES",
+    "GAUSSIAN_SSIM",
+    "GAUSSIAN_CLASSES",
     "BLUR_SSIM",
     "BLUR_CLASSES",
-    "GRAYSCALE_SSIM",
-    "GRAYSCALE_CLASSES",
-    "NEGATIVE_SSIM",
-    "NEGATIVE_CLASSES",
-    "ZOOM_SSIM",
-    "ZOOM_CLASSES",
 ]
 df = pd.DataFrame(columns=HEADERS)
-
 
 try:
     mkdir("distorcoes")
@@ -53,14 +52,11 @@ try:
 except FileExistsError:
     pass
 
-
 files_val = listdir(PATH_TO_DIR_VAL)
 files_train = listdir(PATH_TO_DIR_TRAIN)
 
-
 for file in files_val:
     path = PATH_TO_DIR_VAL + file
-
     save = PATH_TO_SAVE_VAL + file.removesuffix(".JPEG")
     try:
         mkdir(save)
@@ -68,54 +64,35 @@ for file in files_val:
         pass
 
     orig_img = open_img(path=path)
-
     classes_orig = classify_to_data(orig_img)
 
-    #Canny
-
+    # Aplicando distorções e salvando dados para cada uma
     after_canny = canny(orig_img)
     imwrite(f"{save}/{file}_dist_canny.JPEG", after_canny)
-
     ssim_canny = ssim(orig_img, after_canny)
     classes_canny = classify_to_data(after_canny)
 
-    # Rotation
-
     after_rotation = image_rotation(orig_img)
-
     imwrite(f"{save}/{file}_dist_rotation.JPEG", after_rotation)
-
     ssim_rotation = ssim(orig_img, after_rotation)
     classes_rotation = classify_to_data(after_rotation)
 
-    #Brightness
-
-    after_brightness = alter_bright(orig_img,1.5,50)
-
+    after_brightness = alter_bright(orig_img, 1.5, 50)
     imwrite(f"{save}/{file}_dist_brightness.JPEG", after_brightness)
-
     ssim_brightness = ssim(orig_img, after_brightness)
     classes_brightness = classify_to_data(after_brightness)
 
-    #Gaussian
-
-    after_gaussian = add_gaussian_noise(orig_img,mean=0, sigma=25)
-
+    after_gaussian = add_gaussian_noise(orig_img, mean=0, sigma=25)
     imwrite(f"{save}/{file}_dist_gaussian.JPEG", after_gaussian)
-
     ssim_gaussian = ssim(orig_img, after_gaussian)
     classes_gaussian = classify_to_data(after_gaussian)
 
-    #Blur
-
     after_blur = blur(orig_img)
-
     imwrite(f"{save}/{file}_dist_blur.JPEG", after_blur)
-
     ssim_blur = ssim(orig_img, after_blur)
     classes_blur = classify_to_data(after_blur)
 
-
+    # Adicionando a linha de dados ao DataFrame
     df.loc[-1] = [
         path.removeprefix("distorcoes/"),
         classes_orig,
@@ -128,14 +105,13 @@ for file in files_val:
         ssim_gaussian,
         classes_gaussian,
         ssim_blur,
-        classes_blur
+        classes_blur,
     ]
     df.index = df.index + 1
     df = df.sort_index()
 
 for file in files_train:
     path = PATH_TO_DIR_TRAIN + file
-
     save = PATH_TO_SAVE_TRAIN + file.removesuffix(".JPEG")
     try:
         mkdir(save)
@@ -143,54 +119,34 @@ for file in files_train:
         pass
 
     orig_img = open_img(path=path)
-
     classes_orig = classify_to_data(orig_img)
-
-    #Canny
 
     after_canny = canny(orig_img)
     imwrite(f"{save}/{file}_dist_canny.JPEG", after_canny)
-
     ssim_canny = ssim(orig_img, after_canny)
     classes_canny = classify_to_data(after_canny)
 
-    # Rotation
-
     after_rotation = image_rotation(orig_img)
-
     imwrite(f"{save}/{file}_dist_rotation.JPEG", after_rotation)
-
     ssim_rotation = ssim(orig_img, after_rotation)
     classes_rotation = classify_to_data(after_rotation)
 
-    #Brightness
-
-    after_brightness = alter_bright(orig_img,1.5,50)
-
+    after_brightness = alter_bright(orig_img, 1.5, 50)
     imwrite(f"{save}/{file}_dist_brightness.JPEG", after_brightness)
-
     ssim_brightness = ssim(orig_img, after_brightness)
     classes_brightness = classify_to_data(after_brightness)
 
-    #Gaussian
-
-    after_gaussian = add_gaussian_noise(orig_img,mean=0, sigma=25)
-
+    after_gaussian = add_gaussian_noise(orig_img, mean=0, sigma=25)
     imwrite(f"{save}/{file}_dist_gaussian.JPEG", after_gaussian)
-
     ssim_gaussian = ssim(orig_img, after_gaussian)
     classes_gaussian = classify_to_data(after_gaussian)
 
-    #Blur
-
     after_blur = blur(orig_img)
-
     imwrite(f"{save}/{file}_dist_blur.JPEG", after_blur)
-
     ssim_blur = ssim(orig_img, after_blur)
     classes_blur = classify_to_data(after_blur)
 
-
+    # Adicionando a linha de dados ao DataFrame
     df.loc[-1] = [
         path.removeprefix("distorcoes/"),
         classes_orig,
@@ -203,9 +159,10 @@ for file in files_train:
         ssim_gaussian,
         classes_gaussian,
         ssim_blur,
-        classes_blur
+        classes_blur,
     ]
     df.index = df.index + 1
     df = df.sort_index()
 
+# Salvando o DataFrame atualizado em um arquivo CSV
 df.to_csv("distorcoes/distorcoes-data.csv", sep=";")
