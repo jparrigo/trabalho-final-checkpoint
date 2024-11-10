@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 
-
 # Função de canny
 def canny(img):
   x = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
